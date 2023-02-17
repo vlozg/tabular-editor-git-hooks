@@ -1,0 +1,14 @@
+#!/usr/bin/python
+
+import os, shutil
+
+src_bim = "./TabularProject/TabularProject/Model.bim"
+model_folder = os.getcwd()
+tabular_editor_path = "D:/LongVDH/TabularEditor.Portable.2.16.3/TabularEditor.exe"
+
+
+# Copy converted .bim to Visual Studio project folder (replace old file)
+print("Copy Model.bim to VS Project")
+if os.path.exists(src_bim):
+    os.remove(src_bim)
+shutil.copy("Model.bim", os.path.dirname(src_bim))
