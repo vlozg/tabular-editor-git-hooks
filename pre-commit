@@ -1,0 +1,61 @@
+#!/usr/bin/python
+
+import os, subprocess, shutil, filecmp
+import json
+
+src_bim = "./TabularProject/TabularProject/Model.bim"
+model_folder = os.getcwd()
+tabular_editor_path = "D:/LongVDH/TabularEditor.Portable.2.16.3/TabularEditor.exe"
+
+
+if not os.path.exists(src_bim):
+    print("No AS model found from VS project")
+    print("Keep current directory intact and allow commit")
+    exit(0)
+elif os.path.exists("./Model.bim"):
+    if filecmp.cmp(src_bim, "./Model.bim", shallow=False) is True:
+        print("Current AS model from folder matched with AS model, commit allowed")
+        exit(0)
+
+######################
+# Perform remove memberId, fix model name,...
+######################
+print("Preprocess .bim file")
+with open(src_bim, "rt", encoding='utf-8') as f:
+    model = json.load(f)
+
+# Remove id and member id from JSON object
+model.pop("id", None)
+for d1 in model["model"]["roles"]:
+    for d2 in d1["members"]:
+        d2.pop("memberId", None)
+
+# Replace current name with name from parent metadata
+with open("database.json", "rt", encoding='utf-8') as f:
+    model["name"] = json.load(f)["name"]
+
+# Save edited model back to Visual Studio project
+with open(src_bim, "wt", encoding='utf-8') as f:
+    json.dump(model, f, indent=2)
+
+
+print("Take file from VS Project, prepare to deserialize into folder")
+shutil.copy(src_bim, "./")
+
+
+print("Start deserializing...")
+
+os.system(f'cmd /c \
+    ""{tabular_editor_path}" Model.bim \
+    -F "{model_folder}""')
+
+
+print("Complete deserialize, adding folder changed to the commit")
+os.system('git add .')
+os.system('git restore --staged .gitignore')
+
+
+text = subprocess.check_output(["git", "status"])
+if "Changes to be committed:" in text.decode():
+    print("Model in folder have been updated, please check for changes before commit")
+    exit(1)

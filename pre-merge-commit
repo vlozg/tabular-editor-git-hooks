@@ -1,0 +1,14 @@
+#!/usr/bin/python
+
+import os
+
+src_bim = "./TabularProject/TabularProject/Model.bim"
+model_folder = os.getcwd()
+tabular_editor_path = "D:/LongVDH/TabularEditor.Portable.2.16.3/TabularEditor.exe"
+
+
+# Remove existing Model.bim in VS Project first
+# (prepare in case of merge conflict happened)
+print("Remove existing Model.bim in VS Project first (prepare in case of merge conflict happened)")
+if os.path.exists(src_bim):
+    os.remove(src_bim)
